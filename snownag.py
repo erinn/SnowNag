@@ -5,14 +5,19 @@ import requests
 import sys
 from time import gmtime, strftime
 
-password = os.environ.get('NAGIOS__SERVICESSNOWNAG_PASSWORD', '')
-url = os.environ.get('NAGIOS__SERVICESSNOWNAG_URL', '')
-username = os.environ.get('NAGIOS__SERVICESSNOWNAG_USERNAME', '')
+try:
+    password = os.environ['NAGIOS__SERVICESSNOWNAG_PASSWORD']
+    url = os.environ['NAGIOS__SERVICESSNOWNAG_URL']
+    username = os.environ['NAGIOS__SERVICESSNOWNAG_USERNAME']
+except KeyError as e:
+    print('Unable to obtain {} from environment variables, exiting.'.format(e))
+    sys.exit(1)
 
 # Create a more user friendly input
 # This equates with (note the blank entry for the host):
 # Service: $SERVICESTATE$, $SERVICESTATETYPE$, $SERVICEATTEMPT$, $HOSTNAME$, $SERVICEDESC$, $LONGSERVICEOUTPUT$
-# Host: $HOSTSTATE$, $HOSTSTATETYPE$, $HOSTATTEMPT$, $HOSTNAME$, 'Blank Entry', $LONGSERVICEOUTPUT$
+# Host: $HOSTSTATE$, $HOSTSTATETYPE$, $HOSTATTEMPT$, $HOSTNAME$, 'Blank Entry', $LONGHOSTOUTPUT$
+# TODO: tighten up serviceoutput and longserviceoutput
 
 keys = ['state', 'state_type', 'attempt', 'host_name', 'description', 'long_output']
 
