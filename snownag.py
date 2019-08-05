@@ -5,9 +5,9 @@ import requests
 import sys
 from time import gmtime, strftime
 
-password = os.environ.get('NAGIOS__SERVICESNOWNAG_PASSWORD', '')
-url = os.environ.get('NAGIOS__SERVICESNOWNAG_URL', '')
-username = os.environ.get('NAGIOS__SERVICESNOWNAG_USERNAME', '')
+password = os.environ.get('NAGIOS__SERVICESSNOWNAG_PASSWORD', '')
+url = os.environ.get('NAGIOS__SERVICESSNOWNAG_URL', '')
+username = os.environ.get('NAGIOS__SERVICESSNOWNAG_USERNAME', '')
 
 # Create a more user friendly input
 # This equates with (note the blank entry for the host):
