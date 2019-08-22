@@ -21,6 +21,8 @@ parser.add_argument('-d', '--description',
 parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
 
 args = parser.parse_args()
+# Use a dictionary for convenience
+dargs = vars(args)
 
 try:
     password = os.environ['NAGIOS__SERVICESSNOWNAG_PASSWORD']
@@ -39,21 +41,21 @@ states = {
 }
 
 # Only create events on hard states
-if args['state-type'] == 'HARD':
+if dargs['state-type'] == 'HARD':
     data = {
         'records':
             [
                 {
-                    'node': args['host-name'],
+                    'node': dargs['host-name'],
                     'source': 'Nagios',
-                    'metric_name': args['description'],
+                    'metric_name': dargs['description'],
                     'event_class': 'Nagios Generated Event',
-                    'severity': states[args['state']],
+                    'severity': states[dargs['state']],
                     'additional_info':
                         json.dumps(
                             {
-                                'description': args['description'],
-                                'output': args['output'],
+                                'description': dargs['description'],
+                                'output': dargs['output'],
                             }
                         ),
                     'time_of_event': strftime("%Y-%m-%d %H:%M:%S", gmtime())
