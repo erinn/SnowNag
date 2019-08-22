@@ -1,9 +1,26 @@
 #!/usr/bin/env python2
+
+import argparse
 import json
 import os
 import requests
 import sys
 from time import gmtime, strftime
+
+__version__ = '0.0.1'
+
+parser = argparse.ArgumentParser(description='Convert Nagios Events to SNOW Events')
+parser.add_argument('attempt', help='The $SERVICEATTEMPT$ or $HOSTATTEMPT$')
+parser.add_argument('host-name', help='The $HOSTNAME$')
+parser.add_argument('state', help='The $SERVICESTATE$ or $HOSTSTATE$')
+parser.add_argument('state-type', help='The $SERVICESTATETYPE$ or $HOSTSTATETYPE$')
+parser.add_argument('output', nargs='*', help='The SERVICEOUTPUT$ or $HOSTOUTPUT$')
+parser.add_argument('-d', '--description',
+                    help='The $SERVICEDESC$ note there is no host equivalent',
+                    default='')
+parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
+
+args = parser.parse_args()
 
 try:
     password = os.environ['NAGIOS__SERVICESSNOWNAG_PASSWORD']
@@ -13,14 +30,6 @@ except KeyError as e:
     print('Unable to obtain {} from environment variables, exiting.'.format(e))
     sys.exit(1)
 
-# Create a more user friendly input
-# This equates with (note the blank entry for the host):
-# Service: $SERVICESTATE$, $SERVICESTATETYPE$, $SERVICEATTEMPT$, $HOSTNAME$, $SERVICEDESC$, $LONGSERVICEOUTPUT$
-# Host: $HOSTSTATE$, $HOSTSTATETYPE$, $HOSTATTEMPT$, $HOSTNAME$, 'Blank Entry', $LONGHOSTOUTPUT$
-# TODO: tighten up serviceoutput and longserviceoutput
-
-keys = ['state', 'state_type', 'attempt', 'host_name', 'description', 'long_output']
-
 # Mapping from Nagios levels (keys) to SNOW levels (values)
 states = {
     'OK': '0',
@@ -29,25 +38,22 @@ states = {
     'CRITICAL': '1',
 }
 
-# zip it into a dictionary
-nag_output = dict(zip(keys, sys.argv[1:]))
-
 # Only create events on hard states
-if nag_output['state_type'] == 'HARD':
+if args['state-type'] == 'HARD':
     data = {
         'records':
             [
                 {
-                    'node': nag_output['host_name'],
+                    'node': args['host-name'],
                     'source': 'Nagios',
-                    'metric_name': nag_output['description'],
+                    'metric_name': args['description'],
                     'event_class': 'Nagios Generated Event',
-                    'severity': states[nag_output['state']],
+                    'severity': states[args['state']],
                     'additional_info':
                         json.dumps(
                             {
-                                'description': nag_output['description'],
-                                'output': nag_output['long_output'],
+                                'description': args['description'],
+                                'output': args['output'],
                             }
                         ),
                     'time_of_event': strftime("%Y-%m-%d %H:%M:%S", gmtime())

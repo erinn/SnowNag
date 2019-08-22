@@ -109,3 +109,5 @@ venv.bak/
 /app.db
 env.sh
 /docker-compose.override.yaml
+
+.env
